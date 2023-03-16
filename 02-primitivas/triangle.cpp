@@ -46,13 +46,12 @@ const char *fragment_code = "\n"
 "#version 330 core\n"
 
 "in vec3 vColor;\n"
-"layout (location = 0) out vec4 color;\n"
-
-//"out vec4 FragColor;\n"
+//"layout (location = 0) out vec4 color;\n"
+"out vec4 FragColor;\n"
 "\n"
 "void main()\n"
 "{\n"
-"    color = vec4(vColor, 1.0f);\n"
+"    FragColor = vec4(0.87f, 1.0f, 0.65f, 1.0f);\n"
 "}\0";
 
 /* Functions. */
@@ -75,7 +74,7 @@ void display()
     	glUseProgram(program);
     	glBindVertexArray(VAO);
     	// Draws the triangle.
-    	glDrawArrays(GL_TRIANGLES, 0, 3);
+    	glDrawArrays(GL_TRIANGLES, 0, 6);
 
     	glutSwapBuffers();
 }
@@ -131,10 +130,10 @@ void initData()
          0.5f + 0.2f, -0.5f + 0.2f, 0.0f,   0.87f, 1.0f, 0.65f,
          0.0f + 0.2f,  0.5f + 0.2f, 0.0f,   0.87f, 1.0f, 0.65f,
 
-        // segundo triangulo
-/*         -0.7f, -0.7f, 0.0f,                 0.69f, 0.25f, 0.21f,
+        //segundo triangulo
+        -0.7f, -0.7f, 0.0f,                 0.69f, 0.25f, 0.21f,
         -0.3f, -0.9f, 0.0f,                 0.69f, 0.25f, 0.21f,
-        0.0f,  -0.5f, 0.0f,                 0.69f, 0.25f, 0.21f */
+        0.0f,  -0.5f, 0.0f,                 0.69f, 0.25f, 0.21f
     };
     
     // Vertex array object.
