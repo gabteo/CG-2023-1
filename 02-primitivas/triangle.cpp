@@ -33,7 +33,7 @@ const char *vertex_code = "\n"
 "#version 330 core\n"
 "layout (location = 0) in vec3 position;\n"
 "layout (location = 1) in vec3 color;\n"
-"out vec3 vColor\n"
+"out vec3 vColor;\n"
 "\n"
 "void main()\n"
 "{\n"
@@ -51,7 +51,7 @@ const char *fragment_code = "\n"
 "\n"
 "void main()\n"
 "{\n"
-"    FragColor = vec4(0.87f, 1.0f, 0.65f, 1.0f);\n"
+"    FragColor = vec4(vColor, 1.0f);\n"
 "}\0";
 
 /* Functions. */
