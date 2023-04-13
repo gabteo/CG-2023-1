@@ -21,9 +21,11 @@ enum class lista
     lista1,
     lista2,
     lista3,
+    lista4,
+    lista5,
 };
 
-static lista listaAtual = lista::lista3;
+static lista listaAtual = lista::lista5;
 /*-------------------------------------------*/
 
 //Geometry
@@ -46,6 +48,7 @@ struct vector4
     float w;
 };
 
+typedef vector4 point4;
  
 //utils
 point normalizeClick(int x, int y);

@@ -15,12 +15,49 @@ using namespace std;
 #include "../includes/shadersUtils.h"
 #include "../includes/window.h"
 
+#include <math.h>
+
+double mag(vector4 u)
+{
+    return sqrt(pow(u.x, 2) + pow(u.y, 2) + pow(u.z, 2));
+}
+
+vector4 vectorialProduct(vector4 u, vector4 v) 
+{
+    
+    
+    return u;
+}
+
 void initShaders()
 {
     // Request a program and shader slots from GPU
     program  = glCreateProgram();
     int vertex   = glCreateShader(GL_VERTEX_SHADER);
     int fragment = glCreateShader(GL_FRAGMENT_SHADER);
+    
+    point4 camPosition; // (.9, 0, 0)
+    camPosition.x = 0.9f;
+    camPosition.y = 0.0f;
+    camPosition.z = 0.0f;
+    camPosition.w = 1.0f;
+
+    vector4 camYv;
+    vector4 camXv;
+    vector4 camZv;
+    camYv.x = 0; 
+    camYv.y = 1; 
+    camYv.z = 0; 
+    camYv.w = 1;
+
+    double modCamPos = mag(camPosition);
+    camZv.x = -camPosition.x/(float)modCamPos;
+    camZv.y = -camPosition.y/(float)modCamPos;
+    camZv.z = -camPosition.z/(float)modCamPos;
+
+    vector4 camXv = vectorialProduct(camYv, camZv);
+    camYv = vectorialProduct(camXv, camZv);
+
 
     //loadCodeFromFile(codes::vertexCode);
     
@@ -129,14 +166,66 @@ void initData()
     float vertices[] = {
 	// First triangle
         // coordinate     color
-        0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
-        0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+        
+/*         // FRENTE, Ht
+        0.5f, -0.5f, 0.5f, 1.0f, 1.0f, 0.0f,    //inf dir 
+        0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,     //sup dir 
+        -0.5f,  0.5f, 0.5f, 1.0f, 0.0f, 0.0f,   //sup esq 
         // Second triangle
         // coordinate     color
-         0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-         0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-        -0.5f,  0.8f, 0.0f, 1.0f, 0.0f, 0.0f
+
+        // FRENTE, Lt 
+         0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f,   //inf dir
+        -0.5f,  -0.5f, 0.5f, 0.0f, 1.0f, 0.0f,   //inf esq
+        -0.5f,  0.5f, 0.5f, 1.0f, 0.0f, 0.0f,    //sup esq  */
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+        //Front face second triangle.
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+        // Right face first triangle.
+         0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+        // Right face second triangle.
+         0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
+        // Back face first triangle.
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+        // Back face second triangle.
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+        // Left face first triangle.
+        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+        // Left face second triangle.
+        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+        // Top face first triangle.
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f,
+        // Top face second triangle.
+        -0.5f,  0.5f, 0.5f,  1.0f, 0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f,
+        // Bottom face first triangle.
+        -0.5f, -0.5f, 0.5f,  1.0f, 1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 1.0f,
+         0.5f, -0.5f, 0.5f,  1.0f, 1.0f, 1.0f,
+        // Bottom face second triangle.
+        -0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 1.0f, 1.0f
+
 /*         -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
          0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
         -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
@@ -188,7 +277,7 @@ int main(int argc, char **argv)
 
     //glutInitWindowPosition(int x, int y);
 	glutInitWindowSize(WIN_WIDTH, WIN_HEIGH);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutInitWindowSize(win_width, win_height);
 
 	glutCreateWindow(argv[1]);
