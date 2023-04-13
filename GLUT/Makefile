@@ -1,8 +1,8 @@
 CC = g++
 CFLAGS = -Wall
 GLLIBS = -lglut -lGLEW -lGL -lGLU 
-FILES = ../lib/utils.cpp glut-tutorial.cpp input.cpp colors.cpp gutils.cpp shadersUtils.cpp
-OBJFILES = glut-tutorial.o input.o colors.o gutils.o shadersUtils.o window.o
+FILES = ../lib/utils.cpp glut-tutorial.cpp input.cpp colors.cpp gutils.cpp shadersUtils.cpp renderScene.cpp
+OBJFILES = glut-tutorial.o input.o colors.o gutils.o shadersUtils.o window.o renderScene.o
 TARGET = glut-tutorial
 
 glut-tutorial : $(OBJFILES) 
@@ -38,6 +38,11 @@ shadersUtils.o: src/shadersUtils.cpp
 window.o: src/window.cpp
 	@echo "Compiling $@..."
 	$(CC) -c src/window.cpp ../lib/utils.cpp 
+	@echo "Done!\n"
+
+renderScene.o: src/renderScene.cpp
+	@echo "Compiling $@..."
+	$(CC) -c src/renderScene.cpp ../lib/utils.cpp 
 	@echo "Done!\n"
 
 clean:

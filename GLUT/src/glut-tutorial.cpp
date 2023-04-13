@@ -9,11 +9,21 @@ using namespace std;
 #include <GL/glut.h>
 #include <GL/freeglut.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include "../../lib/utils.h"
+
 #include "../includes/gutils.h"
 #include "../includes/input.h"
 #include "../includes/colors.h"
 #include "../includes/shadersUtils.h"
 #include "../includes/window.h"
+//#include "../includes/renderScene.h"
+
+
+static int window;
+
 
 void initShaders()
 {
@@ -24,13 +34,13 @@ void initShaders()
 
     //loadCodeFromFile(codes::vertexCode);
     
-	//char *vertex_code = loadCodeFromFile(codes::vertexCode);
-	//char *fragment_code = loadCodeFromFile(codes::fragmentCode);
+	char *vertex_codeFile = loadCodeFromFile(codes::vertexCode);
+	char *fragment_codeFile = loadCodeFromFile(codes::fragmentCode);
 
 
     // Set shaders source code
-    glShaderSource(vertex, 1, &vertex_code, NULL);
-    glShaderSource(fragment, 1, &fragment_code, NULL);
+    glShaderSource(vertex, 1, &vertex_codeFile, NULL);
+    glShaderSource(fragment, 1, &fragment_codeFile, NULL);
 
     // Compile shaders
     glCompileShader(vertex);
@@ -90,6 +100,7 @@ void initShaders()
     glUseProgram(program);
 }
 
+
 void renderScene()
 {
     setBackgroundColor(lightBrown);
@@ -97,15 +108,42 @@ void renderScene()
     //glClearColor(0.87, 0.72, 0.53, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
+/*     // Set the color for the triangle
+    glColor3f(1.0f, 0.0f, 0.0f);
+
+    // Draw a triangle
+    glBegin(GL_TRIANGLES);
+    glVertex2f(-0.5f, -0.5f);
+    glVertex2f(0.5f, -0.5f);
+    glVertex2f(0.0f, 0.5f);
+    glEnd();
+ */
     glUseProgram(program);
     glBindVertexArray(VAO);
     
     // Draws the triangle.
     cout << "Rendering scene..." << endl;
+
+    // Translation. 
+	glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f,-0.5f,0.0f));
+    	// Rotation around z-axis.
+	glm::mat4 Rz = glm::rotate(glm::mat4(1.0f), glm::radians(30.0f), glm::vec3(0.0f,0.0f,1.0f));
+    	// Scale.
+    	glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.3, 0.5, 1.0));
+
+    	// M = T*R*S. 
+    	glm::mat4 M = T*Rz*S;
+
+    	// Retrieve location of tranform variable in shader.
+	unsigned int loc = glGetUniformLocation(program, "transform");
+   	// Send matrix to shader.
+	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(M));
+    
+    
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glutSwapBuffers();
-
+    //glutSetWindow(window);
 
 /*         	glClearColor(0.87, 0.72, 0.53, 1.0);
     	glClear(GL_COLOR_BUFFER_BIT);
@@ -175,6 +213,7 @@ void initData()
     glBindVertexArray(0);
 }
 
+
 int main(int argc, char **argv) 
 {
 /** 
@@ -191,7 +230,7 @@ int main(int argc, char **argv)
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowSize(win_width, win_height);
 
-	glutCreateWindow(argv[1]);
+	window = glutCreateWindow(argv[1]);
 	glewInit();
 
         initData();
@@ -201,7 +240,7 @@ int main(int argc, char **argv)
         glutReshapeFunc(reshape);
         glutDisplayFunc(renderScene);
         glutKeyboardFunc(keyboard);
-        //glutMouseFunc(mouse);
+        glutMouseFunc(mouse);
 
 	
 

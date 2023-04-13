@@ -1,17 +1,19 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "gutils.h"
+//#include "gutils.h"
+#include <iostream>
+using namespace std;
 
 void keyboard(unsigned char key, int x, int y)
 {
-        switch (key)
-        {
-                case 27:
-                    glutLeaveMainLoop();
-                case 'q':
-                case 'Q':
-                    glutLeaveMainLoop();
-        }
+    switch (key)
+    {
+            case 27:
+                glutLeaveMainLoop();
+            case 'q':
+            case 'Q':
+                glutLeaveMainLoop();
+    }
 
 }
 

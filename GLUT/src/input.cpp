@@ -10,21 +10,23 @@ using namespace std;
 
 void keyboard(unsigned char key, int x, int y)
 {
-        switch (key)
-        {
-            case 27:
-                glutLeaveMainLoop();
-                break;
-            case 'q':
-            case 'Q':
-                glutLeaveMainLoop();
-                break;
-            case '2':
-                listaAtual = lista::lista2;
-                break;
-            default:
-                break;
-        }
+    cout << "Pressed: " <<  key << endl;
+
+    switch (key)
+    {
+        case 27:
+            glutLeaveMainLoop();
+            break;
+        case 'q':
+        case 'Q':
+            glutLeaveMainLoop();
+            break;
+        case '2':
+            listaAtual = lista::lista2;
+            break;
+        default:
+            break;
+    }
 	glutPostRedisplay();
 
 }
@@ -34,21 +36,23 @@ void mouse(int button, int state, int x, int y)
     if (state == GLUT_DOWN){
         switch (button)
         {
-        case GLUT_LEFT_BUTTON:
-            switch (listaAtual)
-            {
-            case lista::lista2:
-                clickLista2(x, y);
-                cout << "Selecionou lista 2." << endl;
+            case GLUT_LEFT_BUTTON:
+                 cout << "Selecionou lista 2." << endl;
+
+                /* switch (listaAtual)
+                {
+                    case lista::lista2:
+                        clickLista2(x, y);
+                        cout << "Selecionou lista 2." << endl;
+                        break;
+                    
+                    default:
+                        break;
+                } */
                 break;
-            
+
             default:
                 break;
-            }
-            break;
-
-        default:
-            break;
         }
     }
 	//glutPostRedisplay();
