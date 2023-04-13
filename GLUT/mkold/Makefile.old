@@ -1,0 +1,12 @@
+CC = g++
+
+GLLIBS = -lglut -lGLEW -lGL -lGLU 
+FILES = colors.cpp window.cpp inputHandlers.cpp shadersUtils.cpp
+
+
+
+all: glut-tutorial.cpp  $(FILES)
+	$(CC) glut-tutorial.cpp ../lib/utils.cpp  -o glut-tutorial $(GLLIBS)
+
+clean:
+	rm -f glut-tutorial

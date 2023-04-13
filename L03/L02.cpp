@@ -77,7 +77,6 @@ float internalProduct(vector2d u, vector2d v)
 
     return vector2d(0,0);
 } */
-
 float vectorModule(vector2d u)
 {
     return 0.0;

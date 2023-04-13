@@ -1,0 +1,38 @@
+CC = g++
+CFLAGS = -Wall
+
+GLLIBS = -lglut -lGLEW -lGL -lGLU 
+
+FILES = ../lib/utils.cpp glut-tutorial.cpp gutils.cpp colors.cpp window.cpp inputHandlers.cpp shadersUtils.cpp
+
+OBJFILES = glut-tutorial.o gutils.o colors.o window.o inputHandlers.o shadersUtils.o
+TARGET = glut-tutorial
+
+glut-tutorial: glut-tutorial.o window.o colors.o inputHandlers.o
+	g++ glut-tutorial.o window.o colors.o inputHandlers.o -o glut-tutorial
+
+colors.o: colors.cpp
+	$(CC) -c colors.cpp
+
+gutils.o: gutils.o
+	$(CC) -c gutils.cpp
+
+shadersUtils.o: shadersUtils.cpp gutils.cpp
+	$(CC) -c shadersUtils.cpp
+
+window.o: window.cpp shadersUtils.cpp
+	$(CC) -c window.cpp
+	
+glut-tutorial.o: glut-tutorial.cpp window.cpp colors.cpp inputHandlers.cpp
+	$(CC) -c glut-tutorial.cpp
+
+
+
+#outobj: $(OBJFILES)
+#	g++ $(OBJFILES) -o outobj
+
+#$(OBJFILES): $(FILES)
+#	g++ -c $(FILES)
+
+clean:
+	rm -f glut-tutorial
