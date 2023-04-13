@@ -6,6 +6,12 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "L02.h"
+#include <math.h> 
+#include <iostream>
+using namespace std;
+
+
+enum POQ { P, O, Q };
 
 
 float normalizeClickInAxis(int value, int axis) 
@@ -56,20 +62,23 @@ point normalizeClick(int x, int y)
     return normalized;
 }
 
-float angleBetweenVectors(vector2d u, vector2d v)
+double angleBetweenVectors(vector2d u, vector2d v)
 {
-    float angle;
+    double angle;
+
+    double uv = internalProduct(u, v);
+    double denominator = mag(u)*mag(v);
+
+    double cos = uv/denominator;
+    angle = acos(cos);
 
 
-    return 0.0;
+    return angle;
 }
 
-float internalProduct(vector2d u, vector2d v)
+double internalProduct(vector2d u, vector2d v)
 {
-    float angle;
-
-
-    return 0.0;
+    return u.x * v.x + u.y * v.y;
 }
 
 /* vector2d vectorialProduct(vector2d u, vector2d v)
@@ -78,9 +87,9 @@ float internalProduct(vector2d u, vector2d v)
     return vector2d(0,0);
 } */
 
-float vectorModule(vector2d u)
+double mag(vector2d u)
 {
-    return 0.0;
+    return sqrt(pow(u.x, 2) + pow(u.y, 2));
 }
 
 
@@ -105,7 +114,8 @@ void display()
     	glUseProgram(program);
     	glBindVertexArray(VAO);
     	// Draws the triangle.
-    	glDrawArrays(GL_TRIANGLES, 0, 6);
+        glLineWidth(255);
+    	glDrawArrays(GL_LINE_STRIP, 0, 3);
 
     	glutSwapBuffers();
 
@@ -181,8 +191,11 @@ void mouse(int button, int state, int x, int y)
             	initShaders();
                 
                 //display();
-                string hello = "hello";
-                outputText(30, 30, hello);
+                //string hello = "hello";
+                //outputText(30, 30, hello);
+                cout << "Dois vetores!" << endl;
+                vector2d u;
+                vector2dFromPoints();
                 display();
 
                 poq.clear();
@@ -201,13 +214,14 @@ void mouse(int button, int state, int x, int y)
  *
  * Defines the coordinates for vertices, creates the arrays for OpenGL.
  */
+
 void initData()
 {
     // Set triangle vertices.
     float vertices[] = {
-        poq[0].x, poq[0].y, 0,      0.96f, 0.49f, 0.50f,
-        poq[1].x, poq[1].y, 0,      0.11f, 0.71f, 0.88f,
-        poq[2].x, poq[2].y, 0,      0.50f, 0.5f, 0.45f
+        poq[P].x, poq[P].y, 0,      0.96f, 0.49f, 0.50f,
+        poq[O].x, poq[O].y, 0,      0.11f, 0.71f, 0.88f,
+        poq[Q].x, poq[Q].y, 0,      0.50f, 0.5f, 0.45f
     };
     
     // Vertex array object.
@@ -289,6 +303,7 @@ int main(int argc, char** argv)
     	glutKeyboardFunc(keyboard);
         glutMouseFunc(mouse);
 
+        glEnable(GL_LINE_SMOOTH);
 
         
 	glutMainLoop();

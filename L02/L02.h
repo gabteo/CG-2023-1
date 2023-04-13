@@ -105,6 +105,7 @@ point normalizeClick(int x, int y);
 
 void printPoint(point point);
 
-float angleBetweenVectors(vector2d u, vector2d v);
-float internalProduct(vector2d u, vector2d v);
+double angleBetweenVectors(vector2d u, vector2d v);
+double internalProduct(vector2d u, vector2d v);
 point vectorialProduct(vector2d u, vector2d v);
+double mag(vector2d u);
