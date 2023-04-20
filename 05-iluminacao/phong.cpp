@@ -29,6 +29,30 @@ unsigned int VAO;
 /** Vertex buffer object. */
 unsigned int VBO;
 
+/** Pyramid x angle */
+float px_angle = 0.0f;
+/** Pyramid x angle increment */
+float px_inc = 0.01f;
+/** Pyramid y angle */
+float py_angle = 0.0f;
+/** Pyramid y angle increment */
+float py_inc = 0.02f;
+
+/** Cube x angle */
+float cx_angle = 0.0f;
+/** Cube x angle increment */
+float cx_inc = 0.01f;
+/** Cube y angle (orbit) */
+float cy_angle = 0.0f;
+/** Cube y angle increment */
+float cy_inc = 0.03f;
+/** Cube z angle */
+float cz_angle = 0.0f;
+/** Cube z angle increment */
+float cz_inc = 0.02f;
+
+
+
 
 /** Vertex shader. */
 const char *vertex_code = "\n"
@@ -46,7 +70,9 @@ const char *vertex_code = "\n"
 "void main()\n"
 "{\n"
 "    gl_Position = projection * view * model * vec4(position, 1.0);\n"
-"    vNormal = normal;\n"
+"    vNormal = mat3(transpose(inverse((model))))*normal;\n"
+// http://www.lighthouse3d.com/tutorials/glsl-12-tutorial/the-normal-matrix/
+//"    vNormal = normal;\n"
 "    fragPosition = vec3(model * vec4(position, 1.0));\n"
 "}\0";
 
@@ -66,10 +92,10 @@ const char *fragment_code = "\n"
 "\n"
 "void main()\n"
 "{\n"
-"    float ka = 0.5;\n"
+"    float ka = 0.4;\n"
 "    vec3 ambient = ka * lightColor;\n"
 "\n"
-"    float kd = 0.8;\n"
+"    float kd = 0.9;\n"
 "    vec3 n = normalize(vNormal);\n"
 "    vec3 l = normalize(lightPosition - fragPosition);\n"
 "\n"
@@ -107,9 +133,11 @@ void display()
     	glUseProgram(program);
     	glBindVertexArray(VAO);
 
-	glm::mat4 Rx = glm::rotate(glm::mat4(1.0f), glm::radians(10.0f), glm::vec3(1.0f,0.0f,0.0f));
+	glm::mat4 S  = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f,1.7f,1.2f));
+
+	glm::mat4 Rx = glm::rotate(glm::mat4(1.0f), glm::radians(30.0f), glm::vec3(1.0f,0.0f,0.0f));
 	glm::mat4 Ry = glm::rotate(glm::mat4(1.0f), glm::radians(-30.0f), glm::vec3(0.0f,1.0f,0.0f));
-	glm::mat4 model = Rx*Ry;
+	glm::mat4 model = Rx*Ry*S;
 	unsigned int loc = glGetUniformLocation(program, "model");
 	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(model));
 	
@@ -249,6 +277,25 @@ void initData()
     glEnable(GL_DEPTH_TEST);
 }
 
+/**
+ * Idle function.
+ *
+ * Called continuously.
+ */
+void idle()
+{
+    px_angle = ((px_angle+px_inc) < 360.0f) ? px_angle+px_inc : 360.0-px_angle+px_inc;
+    py_angle = ((py_angle+py_inc) < 360.0f) ? py_angle+py_inc : 360.0-py_angle+py_inc;
+
+    cx_angle = ((cx_angle+cx_inc) < 360.0f) ? cx_angle+cx_inc : 360.0-cx_angle+cx_inc;
+    cy_angle = ((cy_angle+cy_inc) < 360.0f) ? cy_angle+cy_inc : 360.0-cy_angle+cy_inc;
+    cz_angle = ((cz_angle+cz_inc) < 360.0f) ? cz_angle+cz_inc : 360.0-cz_angle+cz_inc;
+
+    glutPostRedisplay();
+}
+
+
+
 /** Create program (shaders).
  * 
  * Compile shaders and create the program.
@@ -278,6 +325,8 @@ int main(int argc, char** argv)
     	glutReshapeFunc(reshape);
     	glutDisplayFunc(display);
     	glutKeyboardFunc(keyboard);
+    	glutIdleFunc(idle);
+
 
 	glutMainLoop();
 }
