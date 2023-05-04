@@ -126,10 +126,14 @@ void display()
 
     	// Define model matrix.
 	glm::mat4 S  = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f,0.5f,0.5f));
-	glm::mat4 Rx = glm::rotate(glm::mat4(1.0f), glm::radians(px_angle), glm::vec3(1.0f,0.0f,0.0f));
+
+	//glm::mat4 Rx = glm::rotate(glm::mat4(1.0f), glm::radians(px_angle), glm::vec3(1.0f,0.0f,0.0f));
 	glm::mat4 Ry = glm::rotate(glm::mat4(1.0f), glm::radians(py_angle), glm::vec3(0.0f,1.0f,0.0f));
-	glm::mat4 T  = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-1.0f));
-	glm::mat4 model = T*Ry*Rx*S;
+	//glm::mat4 Rz = glm::rotate(glm::mat4(1.0f), glm::radians(cz_angle), glm::vec3(0.0f,0.0f,1.0f));
+	glm::mat4 T  = glm::translate(glm::mat4(1.0f), glm::vec3(0.4f, 0.4f, 0.0f));
+	T  = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f,0.5f,-2.0f));
+
+	glm::mat4 model = T*Ry*S;
 
     	// Retrieve location of tranform variable in shader.
 	loc = glGetUniformLocation(program, "model");
@@ -142,12 +146,8 @@ void display()
 	glBindVertexArray(VAO1);
 
     	// Define model matrix.
-	S  = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f,0.3f,0.3f));
-	Rx = glm::rotate(glm::mat4(1.0f), glm::radians(cx_angle), glm::vec3(1.0f,0.0f,0.0f));
-	Ry = glm::rotate(glm::mat4(1.0f), glm::radians(cy_angle), glm::vec3(0.0f,1.0f,0.0f));
-	glm::mat4 Rz = glm::rotate(glm::mat4(1.0f), glm::radians(cz_angle), glm::vec3(0.0f,0.0f,1.0f));
-	T  = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-2.0f));
-	model = T*Ry*T*Rx*Rz*S;
+
+	model = glm::mat4(1.0f); 
 
     	// Retrieve location of tranform variable in shader.
 	loc = glGetUniformLocation(program, "model");
@@ -227,6 +227,8 @@ void initData()
     // Set cube vertices.
     float cube[] = {
         // coordinate       // color
+        -1.5f, 0.0f,  0.0f,  0.0f, 0.0f, 1.0f,
+        1.5f, 0.0f,  0.0f,  0.0f, 0.0f, 1.0f,
 	    
         /*//Front face first triangle.
         -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
@@ -237,7 +239,7 @@ void initData()
          0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
         -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,*/
         // Right face first triangle.
-         0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
+         //0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
          //0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
          //0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
         /*// Right face second triangle.
@@ -253,7 +255,7 @@ void initData()
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
          0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 1.0f,*/
         // Left face first triangle.
-        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+        //-0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
         //-0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
         //-0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
         /*// Left face second triangle.
