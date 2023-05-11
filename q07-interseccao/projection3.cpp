@@ -12,7 +12,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/string_cast.hpp>
+//#include <glm/gtx/string_cast.hpp>
 #include "../lib/utils.h"
 
 using namespace std;
@@ -53,7 +53,7 @@ float cx_inc = 0.01f;
 /** Cube y angle (orbit) */
 float cy_angle = 0.0f;
 /** Cube y angle increment */
-float cy_inc = 0.03f;
+float cy_inc = 0.1f;
 /** Cube z angle */
 float cz_angle = 0.0f;
 /** Cube z angle increment */
@@ -228,7 +228,7 @@ point4 intersectionLinePlane(lineParametricEquation line, planeEquation plane) {
     float t = totalE/totalD;    // t for which an intersection occurs
 
     point4 intersectionPoint { 0.0f,0.0f,0.0f,5.0f };
-    if (t <= line.t) {
+    if (t < line.t) {
 
         intersectionPoint.w = 0;
         intersectionPoint.x = lineX.e + t*lineX.d;
@@ -264,13 +264,15 @@ bool intersectionLineTriangle(lineParametricEquation line, planeEquation plane, 
     point4 intersection = intersectionLinePlane(line, plane);
 
     
-    if (intersection.w != 5.0f) {   //if line intersects the plane
+    if (intersection.w == 0.0f) {   //if line intersects the plane
 
         float a1 = areaTriangleFromPoints(tri.o, tri.p, intersection);
         float a2 = areaTriangleFromPoints(tri.p, tri.q, intersection);
         float a3 = areaTriangleFromPoints(tri.q, tri.o, intersection);
+        cout << a1 << a2 << a3 << endl;
 
         float areaTriangle = areaTriangleFromPoints(tri.o, tri.p, tri.q);
+        //cout << areaTriangle << (a1) << endl;
 
         // if point intersects the triangle
         if (areaTriangle == a1 + a2 + a3) {
@@ -386,9 +388,9 @@ void display()
 	glm::mat4 S  = glm::scale(glm::mat4(1.0f), glm::vec3(1.3f, 1.3f, 1.3f));
 	glm::mat4 Rx = glm::rotate(glm::mat4(1.0f), glm::radians(px_angle), glm::vec3(1.0f,0.0f,0.0f));
 	glm::mat4 Ry = glm::rotate(glm::mat4(1.0f), glm::radians(py_angle), glm::vec3(0.0f,1.0f,0.0f));
-	glm::mat4 T  = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-1.0f));
+	glm::mat4 T  = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,0.0f));
 	//glm::mat4 model = glm::mat4(1.0f); //T*Ry*Rx*S;
-	glm::mat4 model = T*Ry*Rx;
+	glm::mat4 model = T;
 
 
     	// Retrieve location of tranform variable in shader.
@@ -423,8 +425,8 @@ void display()
 	Rx = glm::rotate(glm::mat4(1.0f), glm::radians(cx_angle), glm::vec3(1.0f,0.0f,0.0f));
 	Ry = glm::rotate(glm::mat4(1.0f), glm::radians(cy_angle), glm::vec3(0.0f,1.0f,0.0f));
 	glm::mat4 Rz = glm::rotate(glm::mat4(1.0f), glm::radians(cz_angle), glm::vec3(0.0f,0.0f,1.0f));
-	T  = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-2.0f));
-	model = T*Ry*T*Rx*Rz;
+	T  = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f, -0.2f));
+	model = Ry*T;
 
     p1 = p1*model;
     p2 = p2*model;
@@ -440,19 +442,19 @@ void display()
     myPoint.w = 0;
     myTriangle.o = myPoint;
 
-    point4 myPoint;
+    point4 myPoint2;
     myPoint.x = p2.x;
     myPoint.y = p2.y;
     myPoint.z = p2.z;
     myPoint.w = 0;
-    myTriangle.p = myPoint;
+    myTriangle.p = myPoint2;
 
-    point4 myPoint;
+    point4 myPoint3;
     myPoint.x = p3.x;
     myPoint.y = p3.y;
     myPoint.z = p3.z;
     myPoint.w = 0;
-    myTriangle.q = myPoint;
+    myTriangle.q = myPoint3;
 
     float triangle[] = {
 	//Front face first triangle.
@@ -463,8 +465,10 @@ void display()
 
     };
 
-    
-    intersectionLineTriangle(myLine, myTriangle);
+    vector4 vec1 = getVector4FromPoints(myPoint, myPoint2);
+    vector4 vec2 = getVector4FromPoints(myPoint2, myPoint3);
+    vector4 normal = getNormalFromVectors(vec1, vec2);
+    intersectionLineTriangle(myLine, getPlaneEquation(normal, myPoint), myTriangle);
     // Vertex array.
     glGenVertexArrays(1, &VAO1);
     glBindVertexArray(VAO1);
@@ -496,9 +500,9 @@ void display()
 
 
     	// Retrieve location of tranform variable in shader.
-	//loc = glGetUniformLocation(program, "model");
+	loc = glGetUniformLocation(program, "model");
    	// Send matrix to shader.
-	//glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(model));
+	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(model));
 	
     	glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -607,14 +611,13 @@ void initData()
     const char* outputNames[] = { "positionOut" }; // the name of the output variable in your shader
     glTransformFeedbackVaryings(program, 1, outputNames, GL_INTERLEAVED_ATTRIBS);
 
-    
+    */
     float line[] = {
-	    //Front face first triangle.
         // coordinate        // color
-	    -0.9f,  0.0f,  0.0f, 0.53f, 0.1f, 0.2f,
-         0.9f,  0.0f,  0.0f, 0.53f, 0.1f, 0.2f,
+	    -0.9f,  0.0f,  0.0f, 1.0f, 1.0f, 1.0f,
+         0.9f,  0.0f,  0.0f, 1.0f, 1.0f, 1.0f
 
-    }; */
+    }; 
     
     // Vertex array.
     glGenVertexArrays(1, &VAO2);
@@ -658,7 +661,7 @@ int main(int argc, char** argv)
 	glewInit();
 
     	// Init vertex data for the triangle.
-    	//initData();
+    	initData();
     
     	// Create shaders.
     	initShaders();
