@@ -67,7 +67,6 @@ const char *vertex_code = "\n"
 "layout (location = 1) in vec3 color;\n"
 "\n"
 "out vec3 vColor;\n"
-"out vec4 positionOut;\n"
 "\n"
 "uniform mat4 model;\n"
 "uniform mat4 view;\n"
@@ -75,7 +74,6 @@ const char *vertex_code = "\n"
 "\n"
 "void main()\n"
 "{\n"
-"    positionOut = projection * view * model * vec4(position, 1.0);\n"
 "    gl_Position = projection * view * model * vec4(position, 1.0);\n"
 "    vColor = color;\n"
 "}\0";
@@ -145,6 +143,11 @@ struct planeEquation
     float w;
 };
 
+struct triangle
+{
+    point4 o, p, q;
+};
+
 struct lineParametricEquation
 {
     point4 e;
@@ -174,7 +177,6 @@ void initData(void);
 void initShaders(void);
 
 planeEquation getPlaneEquation(vector4 normal, point4 point);
-bool intersectionLinePlane();
 vector4 vectorialProduct(vector4 u, vector4 v);
 vector4 getNormalFromVectors(vector4 u, vector4 v);
 vector4 getVector4FromCoordinates(float x, float y, float z);
@@ -183,6 +185,7 @@ vector4 getVector4FromPoints(point4 p, point4 q);
 vector4 normalizeVector4(vector4 u);
 float getVectorMagnitude(vector4 u);
 lineParametricEquation getLineParametricEquation(point4 origin, vector4 direction, float magnitude);
+point4 intersectionLinePlane(lineParametricEquation line, planeEquation plane);
 
 
 planeEquation getPlaneEquation(vector4 normal, point4 point) {
@@ -203,7 +206,7 @@ lineParametricEquation getLineParametricEquation(point4 origin, vector4 directio
     return line;
 }
 
-bool intersectionLinePlane(lineParametricEquation line, planeEquation plane) {
+point4 intersectionLinePlane(lineParametricEquation line, planeEquation plane) {
     lineParametricCoordinate lineX {
         line.e.x,
         line.d.x
@@ -217,15 +220,63 @@ bool intersectionLinePlane(lineParametricEquation line, planeEquation plane) {
         line.d.z
     };
     lineX = lineX*plane.x;
-    lineY = lineY*plane.x;
-    lineZ = lineZ*plane.x;
+    lineY = lineY*plane.y;
+    lineZ = lineZ*plane.z;
 
     float totalD = lineX.d + lineY.d + lineZ.d;
     float totalE = plane.w - (lineX.e + lineY.e + lineZ.e);
     float t = totalE/totalD;    // t for which an intersection occurs
 
+    point4 intersectionPoint { 0.0f,0.0f,0.0f,5.0f };
     if (t <= line.t) {
-        return true;
+
+        intersectionPoint.w = 0;
+        intersectionPoint.x = lineX.e + t*lineX.d;
+        intersectionPoint.y = lineY.e + t*lineY.d;
+        intersectionPoint.z = lineZ.e + t*lineZ.d;
+
+        
+    }
+    return intersectionPoint;
+}
+
+float areaTriangleFromPoints(point4 a, point4 b, point4 c) {
+    point4 u {
+        b.x - a.x,
+        b.y - a.y,
+        b.z - a.z,
+        0.0f
+    };
+
+    point4 v {
+        c.x - a.x,
+        c.y - a.y,
+        c.z - a.z,
+        0.0f
+    };
+    //(0.5)sqrt((u2v3−u3v2)^2+(u3v1−u1v3)^2+(u1v2−u2v1)^2)
+    //https://math.stackexchange.com/questions/2152754/calculate-3d-triangle-area-by-determinant
+    //https://mathworld.wolfram.com/TriangleArea.html
+    return 0.5f * sqrt(pow(u.y*v.z - u.z*v.y, 2) + pow(u.z*v.x-u.x*v.z, 2) + pow(u.x*v.y - u.y*v.x, 2));
+}
+
+bool intersectionLineTriangle(lineParametricEquation line, planeEquation plane, triangle tri) {
+    point4 intersection = intersectionLinePlane(line, plane);
+
+    
+    if (intersection.w != 5.0f) {   //if line intersects the plane
+
+        float a1 = areaTriangleFromPoints(tri.o, tri.p, intersection);
+        float a2 = areaTriangleFromPoints(tri.p, tri.q, intersection);
+        float a3 = areaTriangleFromPoints(tri.q, tri.o, intersection);
+
+        float areaTriangle = areaTriangleFromPoints(tri.o, tri.p, tri.q);
+
+        // if point intersects the triangle
+        if (areaTriangle == a1 + a2 + a3) {
+            cout << "intersecta" << endl;
+            return true;
+        }
     }
     return false;
 }
@@ -252,12 +303,6 @@ vector4 getVector4FromCoordinates(float x, float y, float z) {
 
 vector4 getVector4FromPoints(point4 p, point4 q) {
     vector4 point =  p - q;
-    /* vector4 result {
-        result.x = point.x,
-        result.y = point.y,
-        result.z = point.z,
-        result.w = 1.0f,
-    }; */
     return point;
 }
 
@@ -268,6 +313,10 @@ vector4 normalizeVector4(vector4 u) {
 float getVectorMagnitude(vector4 u) {
     return sqrt(pow(u.x, 2) + pow(u.y, 2) + pow(u.z, 2));
 }
+
+
+static lineParametricEquation myLine;
+
 /** 
  * Drawing function.
  *
@@ -294,6 +343,41 @@ void display()
  	loc = glGetUniformLocation(program, "projection");
    	// Send matrix to shader.
 	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(projection));
+
+
+
+
+
+// Set triangle vertices.
+        
+    
+    float p1x = -0.5f;
+    float p1y = -0.5f;
+    float p1z = 0.5f;
+
+    float p2x = 0.5f;
+    float p2y = -0.5f;
+    float p2z = 0.5f;
+
+    float p3x = 0.5f;
+    float p3y = 0.5f;
+    float p3z = 0.5f;
+
+    float transformedTriangle[] = {
+	//Front face first triangle.
+        // coordinate       // color
+        p1x, p1y, p1z,  0.5f, 0.0f, 0.2f,
+        p2x, p2y, p2z,  0.0f, 0.6f, 0.8f,
+        p3x, p3y, p3z,  0.9f, 0.7f, 0.0f,
+
+    };
+
+    glm::vec4 p1 = glm::vec4(p1x, p1y, p1z, 0.0f);
+    glm::vec4 p2 = glm::vec4(p2x, p2y, p2z, 0.0f);
+    glm::vec4 p3 = glm::vec4(p3x, p3y, p3z, 0.0f);
+
+    
+
 	
 	// Pyramid --> linha
 	glBindVertexArray(VAO2);
@@ -305,6 +389,7 @@ void display()
 	glm::mat4 T  = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-1.0f));
 	//glm::mat4 model = glm::mat4(1.0f); //T*Ry*Rx*S;
 	glm::mat4 model = T*Ry*Rx;
+
 
     	// Retrieve location of tranform variable in shader.
 	loc = glGetUniformLocation(program, "model");
@@ -318,13 +403,13 @@ void display()
     	glDrawArrays(GL_LINES, 0, 2);
     glEndTransformFeedback();
     
-    int numVertices = 2;
+/*     int numVertices = 2;
     glm::vec4* feedbackData = new glm::vec4[numVertices];
     glGetBufferSubData(GL_ARRAY_BUFFER, 0, numVertices * sizeof(glm::vec4), feedbackData);
 
     for(int i = 0; i < numVertices; i++) {
         cout << "x: " << feedbackData[i].x << " y: " << feedbackData[i].y << " z: " << feedbackData[i].z<< endl;
-    }
+    } */
 
 
 
@@ -341,10 +426,79 @@ void display()
 	T  = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-2.0f));
 	model = T*Ry*T*Rx*Rz;
 
+    p1 = p1*model;
+    p2 = p2*model;
+    p3 = p3*model;
+
+
+    triangle myTriangle;
+
+    point4 myPoint;
+    myPoint.x = p1.x;
+    myPoint.y = p1.y;
+    myPoint.z = p1.z;
+    myPoint.w = 0;
+    myTriangle.o = myPoint;
+
+    point4 myPoint;
+    myPoint.x = p2.x;
+    myPoint.y = p2.y;
+    myPoint.z = p2.z;
+    myPoint.w = 0;
+    myTriangle.p = myPoint;
+
+    point4 myPoint;
+    myPoint.x = p3.x;
+    myPoint.y = p3.y;
+    myPoint.z = p3.z;
+    myPoint.w = 0;
+    myTriangle.q = myPoint;
+
+    float triangle[] = {
+	//Front face first triangle.
+        // coordinate       // color
+        p1x, p1y, p1z,  0.5f, 0.0f, 0.2f,
+        p2x, p2y, p2z,  0.0f, 0.6f, 0.8f,
+        p3x, p3y, p3z,  0.9f, 0.7f, 0.0f,
+
+    };
+
+    
+    intersectionLineTriangle(myLine, myTriangle);
+    // Vertex array.
+    glGenVertexArrays(1, &VAO1);
+    glBindVertexArray(VAO1);
+
+    // Vertex buffer
+    glGenBuffers(1, &VBO1);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle), triangle, GL_STATIC_DRAW);
+    
+    // Set attributes.
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+
+   /*  glGenBuffers(2, &feedbackBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, feedbackBuffer);
+    glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(glm::vec4), nullptr, GL_DYNAMIC_COPY);
+
+    glBindBuffer(GL_ARRAY_BUFFER, feedbackBuffer);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 8*sizeof(float), nullptr); */
+
+    /* const char* outputNames[] = { "positionOut" }; // the name of the output variable in your shader
+    glTransformFeedbackVaryings(program, 1, outputNames, GL_INTERLEAVED_ATTRIBS); */
+
+
+
+
     	// Retrieve location of tranform variable in shader.
-	loc = glGetUniformLocation(program, "model");
+	//loc = glGetUniformLocation(program, "model");
    	// Send matrix to shader.
-	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(model));
+	//glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(model));
 	
     	glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -416,7 +570,7 @@ void idle()
  */
 void initData()
 {
-    // Set triangle vertices.
+/*     // Set triangle vertices.
     float triangle[] = {
 	//Front face first triangle.
         // coordinate       // color
@@ -460,7 +614,7 @@ void initData()
 	    -0.9f,  0.0f,  0.0f, 0.53f, 0.1f, 0.2f,
          0.9f,  0.0f,  0.0f, 0.53f, 0.1f, 0.2f,
 
-    };
+    }; */
     
     // Vertex array.
     glGenVertexArrays(1, &VAO2);
@@ -504,7 +658,7 @@ int main(int argc, char** argv)
 	glewInit();
 
     	// Init vertex data for the triangle.
-    	initData();
+    	//initData();
     
     	// Create shaders.
     	initShaders();
