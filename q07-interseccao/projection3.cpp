@@ -22,6 +22,7 @@ using namespace std;
 int win_width  = 600;
 /** Window height. */
 int win_height = 600;
+int intersectCount = 0;
 
 /** Program variable. */
 int program;
@@ -116,6 +117,48 @@ struct vector4
         return result;
     }
 };
+
+//(a) Left(p1,p2,p3) que retorna true se p3 está à esquerda da reta determinada pelo segmento orientado p1p2;
+struct point2 {
+    float x;
+    float y;
+
+    vector4 operator-(point2 b)
+    {
+        vector4 result;
+        result.x = x - b.x;
+        result.y = y - b.y;
+        result.z = 0.0f;
+        result.w = 1.0f;
+        return result;
+    }
+};
+
+bool Left(point2 p1, point2 p2, point2 p3) {
+    vector4 u = p2 - p1;
+    vector4 v = p3 - p1;
+
+    // se area < 0, left
+
+    float area = 0.5 * ((p2.x - p1.x)*(p3.y - p1.y) - (p2.y - p1.y)*(p3.x - p1.x));
+    if(area > 0)
+        return true;
+    else
+        return false;
+}
+//(b) LeftOn(p1,p2,p3) que retorna true se p3 está à esquerda ou sobre a reta determinada pelo segmento orientado p1p2.
+bool LeftOn(point2 p1, point2 p2, point2 p3) {
+    vector4 u = p2 - p1;
+    vector4 v = p3 - p1;
+
+    // se area < 0, left
+    float area = 0.5 * ((p2.x - p1.x)*(p3.y - p1.y) - (p2.y - p1.y)*(p3.x - p1.x));
+    if(area => 0)
+        return true;
+    else 
+        return false;
+}
+
 
 struct point4
 {
@@ -275,7 +318,7 @@ point4 intersectionLinePlane(lineParametricEquation line, planeEquation plane, v
         point4 intersectionPoint { 0.0f,0.0f,0.0f,0.0f };
         
         if (abs(t) < abs(line.t)) {
-            //cout << "intersecta na área visível da linha" << endl;
+            //cout << "linha" << endl;
         }
         intersectionPoint.w = 0;
         intersectionPoint.x = lineX.e + t*lineX.d;
@@ -329,7 +372,8 @@ bool intersectionLineTriangle(lineParametricEquation line, planeEquation plane, 
 
         // if point intersects the triangle
         if (areaTriangle == somaDasAreas) {
-            cout << "INTERSECTA TRIANGULO" << endl;
+            intersectCount++;
+            cout << "INTERSECTA TRIANGULO " << intersectCount << endl;
             return true;
         }
     
